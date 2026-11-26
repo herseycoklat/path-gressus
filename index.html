@@ -279,9 +279,9 @@ function others(){let txt="";
  return h("div",null,back(),h("h1",null,"How others see you"),
   h("p",null,`Your parent sends a link to at least ${MIN_RATERS} people who see you often. Their answers go to your parent, not to you. When enough are in, your parent gives you one code. Paste it here.`),
   h("p",{class:"muted small"},"Orang tuamu mengirim link ke minimal 5 orang. Jawaban dikirim ke orang tuamu. Setelah cukup, kamu dapat satu kode untuk ditempel di sini."),
-  h("div",{class:"panel"},h("h3",{style:"margin-top:0"},"Paste the code from your parent"),h("p",{class:"muted small"},"It starts with PATHB1."),
+  h("div",{class:"panel"},h("h3",{style:"margin-top:0"},"Paste the code from your parent"),h("p",{class:"muted small"},"It starts with PATHB1. Codes that start with PATH1. are single rater answers: those go to your parent's collector page."),
    h("textarea",{id:"codes",placeholder:"PATHB1.…",oninput:e=>txt=e.target.value}),
-   h("div",{class:"row",style:"margin-top:8px"},h("button",{class:"btn primary",onclick:()=>{const o=decB(txt);if(!o)return toast("That isn't a valid code");
+   h("div",{class:"row",style:"margin-top:8px"},h("button",{class:"btn primary",onclick:()=>{if(/PATH1\./.test(txt)&&!/PATHB1\./.test(txt))return toast("That's a rater's code. It goes into your parent's collector page, not here.");const o=decB(txt);if(!o)return toast("That isn't a valid code");
      if(S.revealed&&o.n<=S.nRaters)return toast("You already have this one");
      S.pools=o.pools;S.rels=o.rels||{};S.nRaters=o.n;S.revealed=true;save();toast("Unlocked");render()}},S.revealed?"Update":"Unlock"))),
   S.revealed?h("div",{class:"panel"},h("h3",{style:"margin-top:0"},`What ${S.nRaters} people said`),

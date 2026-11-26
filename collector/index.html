@@ -77,7 +77,7 @@ function kidView(k){let txt="";
   h("h1",null,k.name),h("p",{class:"muted"},"Kode anak: ",h("strong",null,k.code)),
   h("div",{class:"panel"},h("h2",null,"1. Kirim undangan"),h("p",{class:"muted small"},"Kirim ke orang tua, kakak/adik, saudara, guru, dan teman yang sering bertemu "+k.name+". Bisa dikirim Bapak atau oleh "+k.name+" sendiri."),
    S.phone?null:h("p",{class:"warn"},"Isi nomor WhatsApp Bapak di halaman awal dulu."),h("pre",null,invite(k)),h("button",{class:"btn",onclick:()=>copy(invite(k))},"Salin undangan")),
-  h("div",{class:"panel"},h("h2",null,"2. Tempel kode yang masuk"),h("p",{class:"muted small"},"Kode dimulai dengan PATH1. Boleh banyak sekaligus. Isinya tidak ditampilkan di sini."),
+  h("div",{class:"panel"},h("h2",null,"2. Tempel kode yang masuk"),h("p",{class:"muted small"},"Kode penilai dimulai dengan PATH1. dan ditempel di sini, bukan di PATH Lite. Boleh banyak sekaligus. Isinya tidak ditampilkan."),
    h("textarea",{placeholder:"PATH1.…",oninput:e=>txt=e.target.value}),
    h("div",{class:"row",style:"margin-top:8px"},h("button",{class:"btn",onclick:()=>{const found=txt.match(/PATH1\.[A-Za-z0-9+/=]+\.[0-9a-z]+/g)||[];let add=0,dup=0,bad=0,other=0;
      for(const c of found){const o=dec(c,KEYSTR,"PATH1.");if(!o||!Array.isArray(o.ans)){bad++;continue}if(o.child&&o.child!==k.code){other++;continue}if(k.ids.includes(o.id)){dup++;continue}k.ids.push(o.id);k.codes.push(c);add++}
