@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>PATH Mission Control</title>
+<style>
+/* Layout: one column; who-uses-it groups first, then the flow, then behind-the-scenes links. */
+:root{--paper:#FBFAF7;--surface:#fff;--ink:#1D2433;--muted:#5B6372;--rule:#DEDBD3;--sea:#1F6F78;--sea-ink:#fff;--sand:#F1E7D3}
+@media (prefers-color-scheme:dark){:root{--paper:#15181F;--surface:#1C2029;--ink:#E8E6E1;--muted:#A3A9B5;--rule:#2F3540;--sea:#55B4BD;--sea-ink:#0F1A1C;--sand:#24363A;color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+:focus-visible{outline:3px solid var(--sea);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding:28px 16px 64px;display:flex;flex-direction:column;gap:28px}
+h1{font-size:1.8rem;line-height:1.15;margin:0}
+h2{font-size:.95rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+p{margin:0}
+.muted{color:var(--muted)} .small{font-size:.875rem}
+.list{display:flex;flex-direction:column;gap:10px}
+.link{display:flex;gap:14px;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:14px 16px}
+.link.main{border-color:var(--sea);border-width:2px}
+.link .t{font-weight:600}
+.link .u{font-size:.85rem;color:var(--muted);word-break:break-all}
+.link .d{font-size:.9rem;color:var(--muted);margin-top:2px}
+.acts{display:flex;gap:8px;flex:none}
+.btn{border:1px solid var(--rule);background:var(--surface);color:var(--sea);border-radius:999px;padding:7px 14px;font:inherit;font-size:.9rem;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn.primary{background:var(--sea);color:var(--sea-ink);border-color:var(--sea);font-weight:600}
+ol.flow{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px}
+ol.flow b{font-weight:600}
+@media (max-width:520px){.link{flex-direction:column;align-items:flex-start}}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:999px;opacity:0;transition:opacity .2s;pointer-events:none}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <h1>PATH Mission Control</h1>
+    <p class="muted" style="margin-top:6px">Semua link penting untuk uji coba PATH di satu tempat.</p>
+  </div>
+
+  <section>
+    <h2>Untuk anak</h2>
+    <div class="list" id="kid"></div>
+  </section>
+
+  <section>
+    <h2>Untuk Bapak</h2>
+    <div class="list" id="parent"></div>
+  </section>
+
+  <section>
+    <h2>Untuk penilai</h2>
+    <div class="list" id="rater"></div>
+  </section>
+
+  <section>
+    <h2>Alurnya</h2>
+    <ol class="flow">
+      <li><b>Pengumpul:</b> tambahkan anak, salin undangan, kirim ke 7 orang lewat WhatsApp.</li>
+      <li><b>PATH Lite:</b> anak mengisi bagian 1 (dua sore) dan check-in harian selama 14 hari.</li>
+      <li><b>Pengumpul:</b> tempel kode <code>PATH1.</code> dari penilai. Setelah 5+, buat kode anak <code>PATHB1.</code> dan kirim ke anak.</li>
+      <li><b>PATH Lite:</b> anak menempel kode anak, lalu "Copy summary for Claude".</li>
+      <li><b>Claude:</b> tempel ringkasan di chat baru dalam project Path.Gressus untuk mendapatkan peta lengkapnya.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Di balik layar</h2>
+    <div class="list" id="ops"></div>
+  </section>
+
+  <p class="small muted">Halaman ini hanya berisi link. Tidak ada data yang tersimpan di sini.</p>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+const L={
+ kid:[{t:"PATH Lite",u:"https://path.gressus.my.id/",d:"Pertanyaan, check-in harian, dan hasil. Pakai satu HP dan satu browser sampai selesai.",main:true}],
+ parent:[{t:"Pengumpul penilai",u:"https://path.gressus.my.id/collector/",d:"Buat kode anak, salin undangan, kumpulkan kode penilai. Pakai satu HP yang sama.",main:true},
+  {t:"Claude: project Path.Gressus",u:"https://claude.ai/projects",d:"Buka project Path.Gressus, lalu tempel ringkasan dari PATH Lite di chat baru."},
+  {t:"Contoh hasil (Raka)",u:"https://claude.ai/artifact/6woEtkWfMMnjBHfkYERKXM",d:"Simulasi lengkap: pertanyaan dan contoh output setiap tahap."}],
+ rater:[{t:"Form penilai",u:"https://path.gressus.my.id/rater/",d:"Jangan kirim link ini langsung. Kirim lewat undangan dari Pengumpul, karena undangan itu membawa nama dan kode anak.",nocopy:false}],
+ ops:[{t:"Repo GitHub",u:"https://github.com/herseycoklat/path-gressus",d:"Kode ketiga halaman."},
+  {t:"Pengaturan GitHub Pages",u:"https://github.com/herseycoklat/path-gressus/settings/pages",d:"Domain path.gressus.my.id dan Enforce HTTPS."},
+  {t:"Rumahweb (DNS)",u:"https://clientzone.rumahweb.com/",d:"Record CNAME: path → herseycoklat.github.io."}]
+};
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(toast.x);toast.x=setTimeout(()=>t.classList.remove("show"),1600)}
+for(const [k,items] of Object.entries(L)){const box=document.getElementById(k);
+ for(const it of items){const row=document.createElement("div");row.className="link"+(it.main?" main":"");
+  const info=document.createElement("div");
+  const t=document.createElement("div");t.className="t";t.textContent=it.t;
+  const u=document.createElement("div");u.className="u";u.textContent=it.u.replace("https://","");
+  const d=document.createElement("div");d.className="d";d.textContent=it.d;
+  info.append(t,u,d);
+  const acts=document.createElement("div");acts.className="acts";
+  const a=document.createElement("a");a.className="btn"+(it.main?" primary":"");a.href=it.u;a.target="_blank";a.rel="noopener";a.textContent="Buka";
+  const c=document.createElement("button");c.className="btn";c.textContent="Salin";
+  c.onclick=()=>navigator.clipboard.writeText(it.u).then(()=>toast("Link tersalin")).catch(()=>toast(it.u));
+  acts.append(a,c);row.append(info,acts);box.append(row)}}
+</script>
+</body>
+</html>
