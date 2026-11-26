@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Pengumpul Penilai</title>
+<style>
+:root{--paper:#FBFAF7;--surface:#fff;--ink:#1D2433;--muted:#5B6372;--rule:#DEDBD3;--sea:#1F6F78;--sea-ink:#fff;--sand:#F1E7D3;--amber:#9A5A00;--amber-bg:#FBEFD9;--ok:#2F6B3B}
+@media (prefers-color-scheme:dark){:root{--paper:#15181F;--surface:#1C2029;--ink:#E8E6E1;--muted:#A3A9B5;--rule:#2F3540;--sea:#55B4BD;--sea-ink:#0F1A1C;--sand:#24363A;--amber:#E3A64B;--amber-bg:#3A2C14;--ok:#7CC48A;color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--sea);outline-offset:2px}
+.wrap{max-width:720px;margin:0 auto;padding:20px 16px 80px}
+h1{font-size:1.6rem;margin:8px 0 10px} h2{font-size:1.15rem;margin:0 0 8px} p{margin:0 0 10px}
+.muted{color:var(--muted)} .small{font-size:.875rem}
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:16px;margin:14px 0}
+.btn{border:1px solid var(--rule);background:var(--surface);border-radius:999px;padding:9px 18px;cursor:pointer}
+.btn.primary{background:var(--sea);color:var(--sea-ink);border-color:var(--sea);font-weight:600}
+.btn.quiet{border-color:transparent;background:none;color:var(--sea);padding:6px 4px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+label{display:block;margin:8px 0} label>span{display:block;font-size:.875rem;color:var(--muted);margin-bottom:4px}
+input[type=text],textarea{width:100%;border:1px solid var(--rule);background:var(--surface);border-radius:8px;padding:9px 10px}
+textarea{min-height:80px;resize:vertical}
+pre{white-space:pre-wrap;word-break:break-all;background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:12px;font:inherit;font-size:.9rem;max-height:260px;overflow:auto}
+.count{font-size:2rem;font-weight:700;font-variant-numeric:tabular-nums}
+.ok{color:var(--ok);font-weight:600} .warn{background:var(--amber-bg);color:var(--amber);border-radius:8px;padding:10px 12px;font-size:.92rem}
+.tag{display:inline-block;background:var(--sand);border-radius:999px;padding:2px 10px;font-size:.85rem;margin:2px 4px 2px 0}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:999px;opacity:0;transition:opacity .2s;pointer-events:none}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+const RATER_LINK="https://path.gressus.my.id/rater/", MIN=5, NEXT_BATCH=3;
+const KEYSTR="path-lite-raters-v1", BKEY="path-lite-bundle-v1";
+const KEY="pathcollector.v1";
+let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+S=S||{phone:"",kids:{},open:null};
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function h(t,at,...k){const e=document.createElement(t);for(const[x,v]of Object.entries(at||{})){if(v==null||v===false)continue;if(x.startsWith("on"))e.addEventListener(x.slice(2),v);else if(x==="value")e.value=v;else e.setAttribute(x,v===true?"":v)}for(const c of k.flat(9))if(c!=null&&c!==false)e.append(c.nodeType?c:document.createTextNode(c));return e}
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("show"),1800)}
+async function copy(x){try{await navigator.clipboard.writeText(x);toast("Tersalin")}catch(e){const ta=h("textarea");ta.value=x;document.body.append(ta);ta.select();document.execCommand("copy");ta.remove();toast("Tersalin")}}
+
+/* codec: XOR + base64 + checksum (obfuscation, not real encryption) */
+function enc(obj,key,prefix){const b=new TextEncoder().encode(JSON.stringify(obj)),k=new TextEncoder().encode(key);let sum=0,s="";
+ b.forEach((v,i)=>{sum=(sum+v)%65521;s+=String.fromCharCode(v^k[i%k.length])});return prefix+btoa(s)+"."+sum.toString(36)}
+function dec(code,key,prefix){const re=new RegExp("^"+prefix.replace(".","\\.")+"([A-Za-z0-9+/=]+)\\.([0-9a-z]+)$"),m=(code||"").trim().match(re);if(!m)return null;
+ try{const k=new TextEncoder().encode(key),raw=atob(m[1]);let sum=0;const b=new Uint8Array(raw.length);
+  for(let i=0;i<raw.length;i++){b[i]=raw.charCodeAt(i)^k[i%k.length];sum=(sum+b[i])%65521}
+  return sum.toString(36)===m[2]?JSON.parse(new TextDecoder().decode(b)):null}catch(e){return null}}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=crypto.getRandomValues(new Uint32Array(1))[0]%(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
+function newKidCode(name){const A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let s="";crypto.getRandomValues(new Uint8Array(4)).forEach(v=>s+=A[v%A.length]);
+ return (name.normalize("NFD").replace(/[^A-Za-z]/g,"").slice(0,12)||"ANAK")+"-"+s}
+
+function render(){const app=document.getElementById("app");app.innerHTML="";app.append(S.open&&S.kids[S.open]?kidView(S.kids[S.open]):home())}
+function home(){let name="";
+ return h("div",null,h("h1",null,"Pengumpul penilai"),
+  h("p",null,"Penilai mengirim kodenya ke Bapak, bukan ke anak. Di sini kode dikumpulkan tanpa menampilkan isinya. Setelah minimal "+MIN+" orang, halaman ini membuat satu kode anak: jawaban sudah diacak dan tidak terhubung ke penilainya. Kode itulah yang diberikan ke anak."),
+  h("div",{class:"panel"},h("h2",null,"Nomor WhatsApp Bapak"),h("p",{class:"muted small"},"Dicantumkan di pesan undangan supaya penilai tahu ke mana kode dikirim."),
+   h("input",{type:"text",value:S.phone,placeholder:"08xx-xxxx-xxxx",oninput:e=>{S.phone=e.target.value;save()}})),
+  Object.values(S.kids).map(k=>h("div",{class:"panel"},h("div",{class:"row",style:"justify-content:space-between;align-items:center"},
+    h("div",null,h("h2",{style:"margin:0"},k.name),h("div",{class:"muted small"},`Kode anak ${k.code} · ${k.codes.length} penilai`+(k.bundledAt?` · kode anak dibuat untuk ${k.bundledN} orang`:""))),
+    h("button",{class:"btn primary",onclick:()=>{S.open=k.code;save();render()}},"Buka")))),
+  h("div",{class:"panel"},h("h2",null,"Tambah anak"),h("div",{class:"row"},h("label",{style:"flex:1;min-width:200px"},h("span",null,"Nama depan"),h("input",{type:"text",oninput:e=>name=e.target.value})),
+   h("button",{class:"btn primary",style:"margin-bottom:8px",onclick:()=>{if(!name.trim())return toast("Isi nama dulu");const c=newKidCode(name.trim());S.kids[c]={code:c,name:name.trim(),codes:[],ids:[],bundledN:0,bundledAt:null};S.open=c;save();render()}},"Buat kode anak"))))}
+function invite(k){return `Halo, saya ${"ayah/ibu"} dari ${k.name}. ${k.name} sedang mengenali kekuatan dirinya dan meminta Bapak/Ibu/kamu bercerita tentang dia. Sekitar 10 menit, lewat link ini:\n${RATER_LINK}#${k.code}\n\nDi akhir akan muncul kode. Mohon kirim kode itu ke nomor ini: ${S.phone||"(isi nomor)"}, bukan ke ${k.name}. Jawaban diacak dan baru dibuka setelah ${MIN} orang mengisi, jadi ${k.name} tidak tahu siapa menulis apa. Terima kasih!`}
+function kidView(k){let txt="";
+ const newSince=k.codes.length-k.bundledN, canBundle=k.bundledN===0?k.codes.length>=MIN:newSince>=NEXT_BATCH;
+ const rels={};k.codes.forEach(c=>{const o=dec(c,KEYSTR,"PATH1.");if(o)rels[o.rel]=(rels[o.rel]||0)+1});
+ let bundle="";
+ return h("div",null,h("button",{class:"btn quiet",onclick:()=>{S.open=null;save();render()}},"← Semua anak"),
+  h("h1",null,k.name),h("p",{class:"muted"},"Kode anak: ",h("strong",null,k.code)),
+  h("div",{class:"panel"},h("h2",null,"1. Kirim undangan"),h("p",{class:"muted small"},"Kirim ke orang tua, kakak/adik, saudara, guru, dan teman yang sering bertemu "+k.name+". Bisa dikirim Bapak atau oleh "+k.name+" sendiri."),
+   S.phone?null:h("p",{class:"warn"},"Isi nomor WhatsApp Bapak di halaman awal dulu."),h("pre",null,invite(k)),h("button",{class:"btn",onclick:()=>copy(invite(k))},"Salin undangan")),
+  h("div",{class:"panel"},h("h2",null,"2. Tempel kode yang masuk"),h("p",{class:"muted small"},"Kode dimulai dengan PATH1. Boleh banyak sekaligus. Isinya tidak ditampilkan di sini."),
+   h("textarea",{placeholder:"PATH1.…",oninput:e=>txt=e.target.value}),
+   h("div",{class:"row",style:"margin-top:8px"},h("button",{class:"btn",onclick:()=>{const found=txt.match(/PATH1\.[A-Za-z0-9+/=]+\.[0-9a-z]+/g)||[];let add=0,dup=0,bad=0,other=0;
+     for(const c of found){const o=dec(c,KEYSTR,"PATH1.");if(!o||!Array.isArray(o.ans)){bad++;continue}if(o.child&&o.child!==k.code){other++;continue}if(k.ids.includes(o.id)){dup++;continue}k.ids.push(o.id);k.codes.push(c);add++}
+     if(!found.length)bad++;save();render();toast([add&&`${add} ditambahkan`,dup&&`${dup} sudah ada`,other&&`${other} untuk anak lain`,bad&&`${bad} tidak valid`].filter(Boolean).join(" · "))}},"Tambahkan")),
+   h("div",{class:"row",style:"align-items:center;margin-top:10px"},h("span",{class:"count"},k.codes.length),h("span",{class:"muted"},`penilai terkumpul (minimal ${MIN})`)),
+   Object.keys(rels).length?h("p",null,Object.entries(rels).map(([r,n])=>h("span",{class:"tag"},`${n} ${r}`))):null),
+  h("div",{class:"panel"},h("h2",null,"3. Buat kode anak"),
+   h("p",{class:"muted small"},k.bundledN?`Kode anak terakhir berisi ${k.bundledN} penilai. Kode baru bisa dibuat setelah ada ${NEXT_BATCH} penilai tambahan (sekarang ${newSince}), supaya jawaban satu orang tidak bisa dikenali dari selisihnya.`:`Bisa dibuat setelah ${MIN} penilai.`),
+   h("button",{class:"btn primary",disabled:!canBundle,onclick:e=>{
+     const pools=[[],[],[],[],[]],rel={};k.codes.forEach(c=>{const o=dec(c,KEYSTR,"PATH1.");if(!o)return;rel[o.rel]=(rel[o.rel]||0)+1;o.ans.forEach((a,i)=>{if(a&&a.trim())pools[i].push(a.trim())})});
+     pools.forEach(shuffle);bundle=enc({v:1,child:k.code,name:k.name,n:k.codes.length,rels:rel,pools,at:Date.now()},BKEY,"PATHB1.");
+     k.bundledN=k.codes.length;k.bundledAt=Date.now();k.lastBundle=bundle;save();render()}},"Buat kode anak"),
+   k.lastBundle?h("div",{style:"margin-top:12px"},h("p",null,h("span",{class:"ok"},"Siap. ")," Kirim kode ini ke "+k.name+". Ia menempelkannya di PATH Lite, bagian “How others see you”."),
+    h("pre",null,k.lastBundle),h("button",{class:"btn",onclick:()=>copy(k.lastBundle)},"Salin kode anak")):null),
+  h("div",{class:"panel"},h("h2",null,"Hapus"),h("p",{class:"muted small"},"Menghapus semua kode untuk "+k.name+" dari browser ini."),
+   h("button",{class:"btn",onclick:e=>{const b=e.currentTarget;if(b.dataset.armed){delete S.kids[k.code];S.open=null;save();render()}else{b.dataset.armed=1;b.textContent="Tekan sekali lagi untuk menghapus"}}},"Hapus data "+k.name)))}
+render();
+</script>
+</body>
+</html>
