@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your Map</title>
+<style>
+:root{--paper:#FBFAF7;--surface:#fff;--ink:#1D2433;--muted:#5B6372;--rule:#DEDBD3;--sea:#1F6F78;--sea-ink:#fff;--sand:#F1E7D3;--amber:#9A5A00;--amber-bg:#FBEFD9}
+@media (prefers-color-scheme:dark){:root{--paper:#15181F;--surface:#1C2029;--ink:#E8E6E1;--muted:#A3A9B5;--rule:#2F3540;--sea:#55B4BD;--sea-ink:#0F1A1C;--sand:#24363A;--amber:#E3A64B;--amber-bg:#3A2C14}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--sea);outline-offset:2px}
+.wrap{max-width:680px;margin:0 auto;padding:20px 16px 80px}
+h1{font-size:1.7rem;line-height:1.2;margin:8px 0 12px}
+h2{font-size:1.2rem;margin:26px 0 8px}
+p{margin:0 0 12px}
+.muted{color:var(--muted)} .small{font-size:.875rem}
+.id{display:block;color:var(--muted);font-size:.9rem;margin-top:2px}
+.steps{display:flex;gap:6px;margin:4px 0 22px}
+.steps span{flex:1;height:6px;border-radius:3px;background:var(--rule)}
+.steps span.on{background:var(--sea)}
+.btn{border:1px solid var(--rule);background:var(--surface);border-radius:999px;padding:9px 18px;cursor:pointer}
+.btn.primary{background:var(--sea);color:var(--sea-ink);border-color:var(--sea);font-weight:600}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:26px}
+.item{padding:14px 0;border-bottom:1px solid var(--rule)}
+.q{margin-bottom:8px}
+.scale{display:flex;justify-content:space-between;max-width:400px}
+.scale button{border:2px solid var(--sea);background:transparent;border-radius:50%;cursor:pointer;padding:0}
+.scale button[aria-checked=true]{background:var(--sea)}
+.ends{display:flex;justify-content:space-between;max-width:400px;font-size:.8rem;color:var(--muted);margin-top:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+.grid button{text-align:left;border:1px solid var(--rule);background:var(--surface);border-radius:8px;padding:10px 12px;cursor:pointer}
+.grid button[aria-pressed=true]{background:var(--sand);border-color:var(--sea);font-weight:600}
+textarea,input[type=text]{width:100%;border:1px solid var(--rule);background:var(--surface);border-radius:8px;padding:9px 10px}
+textarea{min-height:80px;resize:vertical}
+label{display:block;margin:12px 0}
+label>span{display:block;margin-bottom:4px}
+.note{background:var(--amber-bg);color:var(--amber);border-radius:8px;padding:10px 12px;font-size:.92rem}
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:16px;margin:12px 0}
+pre{white-space:pre-wrap;background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:12px;font:inherit;font-size:.9rem;max-height:300px;overflow:auto}
+table{width:100%;border-collapse:collapse} td{padding:6px 4px;border-bottom:1px solid var(--rule)} td.n{text-align:right;font-variant-numeric:tabular-nums}
+.btn.quiet{border-color:transparent;background:none;color:var(--sea);padding:6px 4px}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.card{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:16px 18px;border:1px solid var(--rule);background:var(--surface);border-radius:14px;margin-bottom:12px}
+.card h3{margin:0 0 2px;font-size:1.05rem}
+.status{font-size:.85rem;color:var(--muted);margin-top:2px}
+.choice{display:flex;gap:6px;flex-wrap:wrap}
+.choice button{border:1px solid var(--rule);background:var(--surface);border-radius:999px;padding:6px 12px;cursor:pointer}
+.choice button[aria-pressed=true]{background:var(--sand);border-color:var(--sea);font-weight:600}
+.loggrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:8px;max-width:300px}
+.day{height:30px;border-radius:6px;border:1px solid var(--rule);display:flex;align-items:center;justify-content:center;font-size:.72rem;color:var(--muted)}
+.day.done{background:var(--sea);border-color:var(--sea);color:var(--sea-ink)}
+.day.late{background:var(--sand);border-color:var(--sea);color:var(--ink)}
+.day.miss{border-color:var(--amber);color:var(--amber);border-style:dashed}
+.day.today{border:2px solid var(--sea);color:var(--ink);font-weight:600}
+ul{margin:4px 0 0;padding-left:20px} li{margin:4px 0}
+h3{font-size:1.05rem}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pills button{border:1px solid var(--rule);background:var(--surface);border-radius:999px;padding:7px 13px;cursor:pointer;font-size:.95rem}
+.pills button[aria-pressed=true]{background:var(--sand);border-color:var(--sea);font-weight:600}
+.opts{display:grid;gap:8px}
+.opts button{text-align:left;border:1px solid var(--rule);background:var(--surface);border-radius:10px;padding:10px 12px;cursor:pointer}
+.opts button[aria-pressed=true]{background:var(--sand);border-color:var(--sea);font-weight:600}
+.item .choice{margin-top:2px}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:999px;opacity:0;transition:opacity .2s;pointer-events:none}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+/* ---------- content ---------- */
+const INTERESTS = [ // own items, 5 per RIASEC type
+ ["R","Fix a bike, a fan or a small engine","Memperbaiki sepeda, kipas, atau mesin kecil"],
+ ["R","Build something with tools","Membuat sesuatu dengan perkakas"],
+ ["R","Work outdoors, on a boat, farm or site","Bekerja di luar ruangan: kapal, kebun, lapangan"],
+ ["R","Set up or repair gadgets","Merakit atau memperbaiki gadget"],
+ ["R","Cook or make things with your hands","Memasak atau membuat sesuatu dengan tangan"],
+ ["I","Find out why animals behave the way they do","Mencari tahu kenapa hewan berperilaku tertentu"],
+ ["I","Run an experiment to test an idea","Melakukan eksperimen untuk menguji ide"],
+ ["I","Figure out how an app or machine works inside","Mencari tahu cara kerja aplikasi atau mesin"],
+ ["I","Solve a hard puzzle or maths problem","Memecahkan teka-teki atau soal matematika sulit"],
+ ["I","Read about new discoveries in science","Membaca penemuan baru di dunia sains"],
+ ["A","Design a poster, logo or room","Mendesain poster, logo, atau ruangan"],
+ ["A","Edit a video or make a short film","Mengedit video atau membuat film pendek"],
+ ["A","Write stories, songs or poems","Menulis cerita, lagu, atau puisi"],
+ ["A","Draw, paint or take creative photos","Menggambar, melukis, atau memotret kreatif"],
+ ["A","Make up a game or a new way of doing something","Menciptakan permainan atau cara baru"],
+ ["S","Help a younger student understand a lesson","Membantu adik kelas memahami pelajaran"],
+ ["S","Listen to a friend going through something hard","Mendengarkan teman yang sedang kesulitan"],
+ ["S","Organise a charity or volunteer event","Mengadakan acara amal atau relawan"],
+ ["S","Coach someone in a skill","Melatih seseorang suatu keterampilan"],
+ ["S","Take care of people who are sick or hurt","Merawat orang yang sakit atau terluka"],
+ ["E","Convince a group to back your idea","Meyakinkan kelompok mendukung idemu"],
+ ["E","Start a small business or sell something","Memulai usaha kecil atau berjualan"],
+ ["E","Lead a team project and make the final call","Memimpin proyek tim dan mengambil keputusan"],
+ ["E","Pitch an idea to adults for money or support","Mempresentasikan ide ke orang dewasa untuk dukungan"],
+ ["E","Negotiate a deal or a price","Bernegosiasi harga atau kesepakatan"],
+ ["C","Keep track of a club's money and records","Mencatat keuangan dan arsip klub"],
+ ["C","Organise files or data so they're easy to find","Merapikan file atau data agar mudah dicari"],
+ ["C","Check a document carefully for mistakes","Memeriksa dokumen dengan teliti"],
+ ["C","Plan a schedule and keep everyone on it","Membuat jadwal dan memastikan semua mengikuti"],
+ ["C","Follow clear steps to get something exactly right","Mengikuti langkah jelas agar hasilnya tepat"]
+].map(([t,en,id],i)=>({id:"r"+(i+1),t,en,idn:id}));
+const TOPICS = ["Ocean & animals","Plants & environment","The human body & health","The mind & behavior","Space & physics","Chemistry & materials","Machines & engineering","Code & computers","AI & robotics","Money & business","People & society","History & cultures","Law & justice","Politics & world affairs","Language & writing","Art & design","Film, video & media","Music","Games","Sports & movement","Food","Architecture & cities","Travel & places"];
+const PERSONALITY = [ // Mini-IPIP (Donnellan et al., 2006), public-domain IPIP items
+ ["E",1,"Am the life of the party.","Jadi pusat keramaian saat kumpul-kumpul."],
+ ["A",1,"Sympathize with others' feelings.","Ikut merasakan perasaan orang lain."],
+ ["C",1,"Get chores done right away.","Langsung mengerjakan tugas, tidak menunda."],
+ ["N",1,"Have frequent mood swings.","Suasana hati sering naik-turun."],
+ ["O",1,"Have a vivid imagination.","Punya imajinasi yang kuat."],
+ ["E",-1,"Don't talk a lot.","Tidak banyak bicara."],
+ ["A",-1,"Am not interested in other people's problems.","Tidak tertarik dengan masalah orang lain."],
+ ["C",-1,"Often forget to put things back in their proper place.","Sering lupa mengembalikan barang ke tempatnya."],
+ ["N",-1,"Am relaxed most of the time.","Sebagian besar waktu merasa santai."],
+ ["O",-1,"Am not interested in abstract ideas.","Tidak tertarik pada ide-ide abstrak (konsep, teori)."],
+ ["E",1,"Talk to a lot of different people at parties.","Mengobrol dengan banyak orang berbeda saat acara."],
+ ["A",1,"Feel others' emotions.","Bisa merasakan emosi orang lain."],
+ ["C",1,"Like order.","Suka hal-hal yang rapi dan teratur."],
+ ["N",1,"Get upset easily.","Mudah kesal atau sedih."],
+ ["O",-1,"Have difficulty understanding abstract ideas.","Sulit memahami ide-ide abstrak."],
+ ["E",-1,"Keep in the background.","Lebih suka berada di belakang layar."],
+ ["A",-1,"Am not really interested in others.","Tidak terlalu tertarik pada orang lain."],
+ ["C",-1,"Make a mess of things.","Sering membuat sesuatu jadi berantakan."],
+ ["N",-1,"Seldom feel blue.","Jarang merasa murung."],
+ ["O",-1,"Do not have a good imagination.","Imajinasiku kurang."]
+].map(([d,k,en,id],i)=>({id:"p"+(i+1),d,k,en,idn:id}));
+const DOMAINS={E:"Outgoing (Extraversion)",A:"Warm & cooperative (Agreeableness)",C:"Organised (Conscientiousness)",N:"Emotional sensitivity",O:"Imagination & ideas (Openness)"};
+const VALUES=["Freedom","Creativity","Helping others","Mastery (getting really good at something)","Recognition","Money","Security","Adventure","Belonging","Leadership","Variety","Impact on the world","Work-life balance","Prestige","Living abroad"];
+const SCENARIOS=[ // own design; each option tags one behaviour theme
+ ["Your group project is stuck a week before the deadline. What do you do first?","Proyek kelompok macet seminggu sebelum tenggat. Apa yang pertama kamu lakukan?",[["Find out what the real problem is","Cari tahu masalah sebenarnya","Investigator"],["Make a plan and split the tasks","Buat rencana dan bagi tugas","Organiser"],["Start building the hardest part myself","Langsung kerjakan bagian tersulit sendiri","Maker"],["Get everyone together and fire them up","Kumpulkan semua dan semangati mereka","Leader"]]],
+ ["A new student joins your class and looks lost. You…","Ada murid baru di kelas dan dia terlihat bingung. Kamu…",[["Sit with them and ask how they're doing","Duduk bersamanya dan tanya kabarnya","Carer"],["Show them how things work here","Tunjukkan cara kerja di sekolah ini","Explainer"],["Introduce them to my friends","Kenalkan ke teman-temanku","Connector"],["Watch first to see what they're like","Amati dulu dia orangnya seperti apa","Observer"]]],
+ ["A free Saturday with no plans. You most likely…","Sabtu kosong tanpa rencana. Kemungkinan besar kamu…",[["Make something (video, drawing, code, food)","Membuat sesuatu (video, gambar, kode, masakan)","Creator"],["Go deep into learning about something","Tenggelam mempelajari sesuatu","Investigator"],["Hang out with people","Kumpul dengan teman","Connector"],["Practise a game or sport to get better","Latihan game atau olahraga supaya makin jago","Competitor"]]],
+ ["Your phone or laptop breaks. You…","HP atau laptopmu rusak. Kamu…",[["Open it up and try to fix it","Bongkar dan coba perbaiki","Fixer"],["Watch videos to understand what went wrong","Tonton video untuk paham apa yang rusak","Investigator"],["Compare options and prices to replace it","Bandingkan pilihan dan harga penggantinya","Analyst"],["Ask someone who knows","Tanya orang yang paham","Connector"]]],
+ ["Your teacher needs a volunteer. You'd most want to…","Guru butuh sukarelawan. Kamu paling ingin…",[["Present the topic to the class","Mempresentasikan topik ke kelas","Explainer"],["Design the slides or poster","Mendesain slide atau poster","Creator"],["Research the facts","Mencari fakta dan datanya","Investigator"],["Keep the team on schedule","Menjaga tim tetap sesuai jadwal","Organiser"]]],
+ ["Two friends are arguing. You…","Dua temanmu bertengkar. Kamu…",[["Calm everyone down","Menenangkan semuanya","Steady"],["Work out who is actually right","Mencari tahu siapa yang sebenarnya benar","Analyst"],["Help each see the other's side","Membantu mereka saling memahami","Carer"],["Suggest something fun to break the tension","Mengajak melakukan hal seru supaya cair","Connector"]]],
+ ["You just learned something cool. You want to…","Kamu baru belajar sesuatu yang keren. Kamu ingin…",[["Tell or show someone","Menceritakan atau menunjukkan ke orang lain","Explainer"],["Try it out myself","Mencobanya sendiri","Maker"],["Learn even more about it","Belajar lebih dalam lagi","Investigator"],["Think how it could be used or sold","Memikirkan bagaimana bisa dipakai atau dijual","Entrepreneur"]]],
+ ["Which compliment would feel best?","Pujian mana yang paling membuatmu senang?",[["\"You explain things so clearly.\"","\"Penjelasanmu jelas banget.\"","Explainer"],["\"You made that? It's amazing.\"","\"Kamu yang bikin? Keren banget.\"","Creator"],["\"You always know what to do.\"","\"Kamu selalu tahu harus apa.\"","Leader"],["\"You really get people.\"","\"Kamu benar-benar paham perasaan orang.\"","Carer"]]]
+].map(([en,idn,opts],i)=>({id:"s"+(i+1),en,idn,opts}));
+const SUBJECTS=["Maths","Physics","Chemistry","Biology","English","Bahasa Indonesia","Economics","Geography","History","Sociology","Computing / ICT","Art","Music","Sports (PE)","Other language"];
+const LEVELS=[["strong","Strong"],["ok","OK"],["hard","Hard"],["none","Not taking"]];
+const ACTS=["Sports team","Music","Drawing / design","Making videos / content","Coding","Gaming","Reading","Writing","Science club / olympiad","Debate / MUN","Student council","Volunteering","Religious group","Selling / small business","Cooking","Building or fixing things","Courses outside school","Caring for siblings or pets"];
+const FREE=[...ACTS,"Social media / scrolling","Watching videos / films","Hanging out with friends","Homework / tutoring","Resting"];
+const RATER_Q=["A time he surprised you","What people come to him for","When he was completely absorbed in something","What he finds harder than most people his age","One word for him, and the story behind it"];
+
+/* ---------- state ---------- */
+const KEY="pathlite.v1", MIN_RATERS=5;
+let S; try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+S=S||{};
+S=Object.assign({view:"hub",step:0,name:"",a:{},forced:"",values:[],why:{},life:{},subj:{},subjFav:"",acts:[],log:{},logStart:null,nRaters:0,pools:[[],[],[],[],[]],rels:{},revealed:false,done:false},S);
+if(!Array.isArray(S.pools)) S.pools=[[],[],[],[],[]];
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function h(t,at,...k){const e=document.createElement(t);for(const[x,v]of Object.entries(at||{})){if(v==null||v===false)continue;if(x.startsWith("on"))e.addEventListener(x.slice(2),v);else if(x==="value")e.value=v;else e.setAttribute(x,v===true?"":v)}for(const c of k.flat(9))if(c!=null&&c!==false)e.append(c.nodeType?c:document.createTextNode(c));return e}
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("show"),1800)}
+async function copy(txt){try{await navigator.clipboard.writeText(txt);toast("Copied")}catch(e){const ta=h("textarea");ta.value=txt;document.body.append(ta);ta.select();document.execCommand("copy");ta.remove();toast("Copied")}}
+function go(view){S.view=view;save();render();scrollTo(0,0)}
+
+/* ---------- dates ---------- */
+const iso=d=>d.toLocaleDateString("en-CA");
+const addDays=(s,n)=>{const d=new Date(s+"T12:00:00");d.setDate(d.getDate()+n);return iso(d)};
+const today=()=>iso(new Date());
+const dayLabel=s=>new Date(s+"T12:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"short"});
+function logWindow(){const st=S.logStart||today();return Array.from({length:14},(_,i)=>addDays(st,i))}
+function logStats(){const w=logWindow(),t=today();const done=w.filter(d=>S.log[d]).length,missed=w.filter(d=>d<t&&!S.log[d]).length,late=w.filter(d=>S.log[d]&&S.log[d].late).length;return{done,missed,late}}
+
+/* ---------- others: child code from the parent ---------- */
+const BKEY="path-lite-bundle-v1";
+function decB(code){const m=(code||"").trim().match(/PATHB1\.([A-Za-z0-9+/=]+)\.([0-9a-z]+)/);if(!m)return null;
+ try{const k=new TextEncoder().encode(BKEY),raw=atob(m[1]);let sum=0;const b=new Uint8Array(raw.length);
+  for(let i=0;i<raw.length;i++){b[i]=raw.charCodeAt(i)^k[i%k.length];sum=(sum+b[i])%65521}
+  if(sum.toString(36)!==m[2])return null;const o=JSON.parse(new TextDecoder().decode(b));return o&&Array.isArray(o.pools)&&o.n>=MIN_RATERS?o:null}catch(e){return null}}
+function relLine(){const e=Object.entries(S.rels||{});return e.length?"Who answered, in total: "+e.map(([k,v])=>`${v} ${k}`).join(", ")+".":""}
+/* ---------- scoring ---------- */
+const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+function riasec(){const o={};for(const t of"RIASEC")o[t]=mean(INTERESTS.filter(i=>i.t===t).map(i=>S.a[i.id]).filter(Number.isFinite));const code=Object.entries(o).filter(x=>x[1]!=null).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]).join("");return{o,code}}
+function big5(){const o={};for(const d in DOMAINS)o[d]=mean(PERSONALITY.filter(i=>i.d===d&&Number.isFinite(S.a[i.id])).map(i=>i.k>0?S.a[i.id]:6-S.a[i.id]));return o}
+function topics(){return TOPICS.map((t,i)=>({t,s:S.a["t"+i]})).filter(x=>Number.isFinite(x.s)).sort((a,b)=>b.s-a.s)}
+
+/* ---------- render ---------- */
+function render(){const app=document.getElementById("app");app.innerHTML="";
+ const v={hub,assess,log:logView,others,results}[S.view]||hub;app.append(v())}
+function back(){return h("button",{class:"btn quiet",onclick:()=>go("hub")},"← Home")}
+
+function hub(){const st=logStats(),assessPct=S.done?"Done":S.step?`Step ${S.step+1} of ${NSTEP}`:"About 25 minutes, can be split";
+ const card=(title,sub,status,btn,onclick,primary)=>h("div",{class:"card"},h("div",null,h("h3",null,title),h("div",{class:"muted small"},sub),h("div",{class:"status"},status)),h("button",{class:"btn"+(primary?" primary":""),onclick},btn));
+ return h("div",null,h("h1",null,S.name?`Hi ${S.name}.`:"Your map"),
+  h("p",{class:"muted"},"Three parts. Do them in any order. Everything stays on this device."),
+  card("1. Questions about you","Mostly tapping: interests, topics, personality, what you'd do, values, school.",assessPct,S.done?"Review":S.step?"Continue":"Start",()=>go("assess"),!S.done),
+  h("div",{class:"card"},h("div",{style:"flex:1;min-width:0"},h("h3",null,"2. Daily one-minute check-in"),h("div",{class:"muted small"},"About 30 seconds a day, for 14 days. Mostly tapping."),
+    h("div",{class:"status"},`${st.done} of 14 days`+(st.missed?` · ${st.missed} missed`:"")),grid()),
+   h("button",{class:"btn"+(S.log[today()]?"":" primary"),onclick:()=>{logDate=today();go("log")}},S.log[today()]?"Edit today":"Check in")),
+  card("3. How others see you",`At least ${MIN_RATERS} people. Your parent collects their answers and gives you a code.`,S.revealed?`${S.nRaters} people · unlocked`:"Waiting for the code","Open",()=>go("others"),false),
+  S.done?h("div",{class:"panel"},h("h3",{style:"margin-top:0"},"Ready for your map"),
+    h("p",{class:"small muted"},(st.done<7?`Tip: more check-in days make the map more accurate (now ${st.done}). `:"")+(!S.revealed?`Others' view isn't unlocked yet. `:"")+"You can make the map now and again later."),
+    h("button",{class:"btn primary",onclick:()=>go("results")},"See results")):null)}
+function grid(){const t=today(),w=logWindow();
+ return h("div",{class:"loggrid","aria-label":"Check-in days"},w.map(d=>{const e=S.log[d],cls=e?(e.late?"day late":"day done"):d<t?"day miss":d===t?"day today":"day";
+  return h("span",{class:cls,title:dayLabel(d)+(e?(e.late?" · filled late":" · done"):d<t?" · missed":"")},h("small",null,dayLabel(d).split(" ")[0]))}))}
+
+/* ---------- assessment ---------- */
+const STEPS=[intro,interests,topicStep,personality,scenarioStep,valuesStep,schoolStep,lifeStep];
+const NSTEP=STEPS.length;
+const VALID=[()=>S.name.trim(),()=>INTERESTS.every(i=>S.a[i.id]),()=>TOPICS.every((_,i)=>S.a["t"+i])&&S.forced,()=>PERSONALITY.every(i=>S.a[i.id]),()=>SCENARIOS.every(q=>S.a[q.id]!=null),()=>S.values.length===5,()=>SUBJECTS.every(x=>S.subj[x])&&S.subjFav,()=>true];
+const HINT=["Type your name.","Answer every one.","Rate every topic and pick one.","Answer every one.","Pick one answer for each.","Pick exactly 5.","Tap a level for every subject and pick your favourite.",""];
+function assess(){const i=S.step,wrap=h("div");
+ const next=h("button",{class:"btn primary"},i===NSTEP-1?"Finish":"Next"),hint=h("p",{class:"muted small",style:"min-height:1.4em"});
+ const refresh=()=>{const ok=VALID[i]();next.disabled=!ok;hint.textContent=ok?"":HINT[i]};
+ next.addEventListener("click",()=>{if(!VALID[i]())return;if(i===NSTEP-1){S.done=true;S.step=0;go("hub");toast("Saved");return}S.step++;save();render();scrollTo(0,0)});
+ wrap.append(h("div",{class:"row"},back(),h("span",{class:"muted small"},`Step ${i+1} of ${NSTEP}`)),h("div",{class:"steps"},STEPS.map((_,k)=>h("span",{class:k<=i?"on":""}))),STEPS[i](refresh),
+  h("div",{class:"nav"},i>0?h("button",{class:"btn",onclick:()=>{S.step--;save();render();scrollTo(0,0)}},"Back"):h("span"),next),hint);
+ refresh();return wrap}
+function scale(id,label,lo,hi,refresh){const sz=[24,28,32,36,40],g=h("div",{class:"scale",role:"radiogroup","aria-label":label});
+ const draw=()=>[...g.children].forEach((b,k)=>b.setAttribute("aria-checked",S.a[id]===k+1));
+ sz.forEach((s,k)=>g.append(h("button",{role:"radio","aria-label":(k+1)+" of 5",style:`width:${s}px;height:${s}px`,onclick:()=>{S.a[id]=k+1;draw();save();refresh()}})));draw();
+ return[g,h("div",{class:"ends"},h("span",null,lo),h("span",null,hi))]}
+function intro(refresh){return h("div",null,h("h1",null,"Questions about you"),
+ h("p",null,"About 25 minutes. Fine to do it in two sittings: stop any time and pick up where you left off. No right answers, nobody is grading you."),
+ h("p",{class:"muted"},"Sekitar 25 menit, boleh dibagi dua kali duduk. Tidak ada jawaban benar atau salah."),
+ h("label",null,h("span",null,"Your first name"),h("input",{type:"text",value:S.name,oninput:e=>{S.name=e.target.value;save();refresh()}})))}
+function interests(r){return h("div",null,h("h1",null,"What would you enjoy doing?"),h("p",{class:"muted"},"Even if you've never tried it. Go with your first reaction."),
+ INTERESTS.map(i=>h("div",{class:"item"},h("div",{class:"q"},i.en,h("span",{class:"id"},i.idn)),scale(i.id,i.en,"Dislike","Love it",r))))}
+function topicStep(r){const grid=h("div",{class:"grid"});
+ TOPICS.forEach(t=>grid.append(h("button",{"aria-pressed":S.forced===t,onclick:e=>{S.forced=t;[...grid.children].forEach(b=>b.setAttribute("aria-pressed","false"));e.currentTarget.setAttribute("aria-pressed","true");save();r()}},t)));
+ return h("div",null,h("h1",null,"Would you read or watch about this for fun?"),h("p",{class:"muted"},"Apakah kamu mau membaca atau menonton tentang ini untuk hiburan?"),
+ TOPICS.map((t,k)=>h("div",{class:"item"},h("div",{class:"q"},t),scale("t"+k,t,"Not at all","Definitely",r))),
+ h("h2",null,"If you could spend a month learning only one, which?"),h("p",{class:"muted small"},"Kalau hanya boleh belajar satu selama sebulan, pilih yang mana?"),grid)}
+function personality(r){return h("div",null,h("h1",null,"How well does this describe you?"),h("p",{class:"muted"},"As you generally are now, not how you wish you were. / Seperti dirimu sekarang, bukan yang kamu inginkan."),
+ PERSONALITY.map(i=>h("div",{class:"item"},h("div",{class:"q"},i.en,h("span",{class:"id"},i.idn)),scale(i.id,i.en,"Not me","Exactly me",r))))}
+function valuesStep(r){const grid=h("div",{class:"grid"}),list=h("div");
+ const drawList=()=>{list.innerHTML="";S.values.forEach(v=>list.append(h("label",null,h("span",null,v+" — why? (optional)"),h("input",{type:"text",value:S.why[v]||"",oninput:e=>{S.why[v]=e.target.value;save()}}))))};
+ VALUES.forEach(v=>grid.append(h("button",{"aria-pressed":S.values.includes(v),onclick:e=>{const k=S.values.indexOf(v);if(k>=0)S.values.splice(k,1);else if(S.values.length<5)S.values.push(v);else return toast("Pick only 5");e.currentTarget.setAttribute("aria-pressed",S.values.includes(v));save();drawList();r()}},v)));
+ drawList();return h("div",null,h("h1",null,"Pick the 5 things that matter most to you"),h("p",{class:"muted"},"In life and in future work. Most important first. / Pilih 5 yang paling penting."),grid,list)}
+function chips(list,isOn,onTap){const g=h("div",{class:"pills"});list.forEach(x=>g.append(h("button",{"aria-pressed":!!isOn(x),onclick:e=>{onTap(x);e.currentTarget.setAttribute("aria-pressed",!!isOn(x))}},x)));return g}
+function scenarioStep(r){return h("div",null,h("h1",null,"What would you most likely do?"),h("p",{class:"muted"},"Pick what you would really do, not what sounds best. / Pilih yang benar-benar akan kamu lakukan, bukan yang terdengar paling bagus."),
+ SCENARIOS.map(q=>{const box=h("div",{class:"opts"});q.opts.forEach((o,k)=>box.append(h("button",{"aria-pressed":S.a[q.id]===k,onclick:e=>{S.a[q.id]=k;[...box.children].forEach(b=>b.setAttribute("aria-pressed","false"));e.currentTarget.setAttribute("aria-pressed","true");save();r()}},o[0],h("span",{class:"id"},o[1]))));
+  return h("div",{class:"item"},h("div",{class:"q"},h("strong",null,q.en),h("span",{class:"id"},q.idn)),box)}))}
+function schoolStep(r){
+ return h("div",null,h("h1",null,"School subjects"),h("p",{class:"muted"},"How do you do in each, honestly? Use your grades as a guide. / Bagaimana kemampuanmu di tiap pelajaran? Pakai nilaimu sebagai patokan."),
+ SUBJECTS.map(x=>{const box=h("div",{class:"choice"});LEVELS.forEach(([k,l])=>box.append(h("button",{"aria-pressed":S.subj[x]===k,onclick:e=>{S.subj[x]=k;[...box.children].forEach(b=>b.setAttribute("aria-pressed","false"));e.currentTarget.setAttribute("aria-pressed","true");save();r()}},l)));
+  return h("div",{class:"item"},h("div",{class:"q"},x),box)}),
+ h("h2",null,"Which subject do you enjoy most, whatever your grade?"),h("p",{class:"muted small"},"Pelajaran mana yang paling kamu nikmati, apa pun nilainya?"),
+ (()=>{const g=h("div",{class:"grid"});SUBJECTS.forEach(x=>g.append(h("button",{"aria-pressed":S.subjFav===x,onclick:e=>{S.subjFav=x;[...g.children].forEach(b=>b.setAttribute("aria-pressed","false"));e.currentTarget.setAttribute("aria-pressed","true");save();r()}},x)));return g})())}
+function lifeStep(){const f=(k,q,qi)=>h("label",null,h("span",null,q,h("span",{class:"id"},qi)),h("textarea",{oninput:e=>{S.life[k]=e.target.value;save()}},S.life[k]||""));
+ return h("div",null,h("h1",null,"What you actually do"),
+ h("h2",null,"Tap everything you do regularly"),h("p",{class:"muted small"},"Yang rutin kamu lakukan, di dalam atau di luar sekolah."),
+ chips(ACTS,x=>S.acts.includes(x),x=>{const k=S.acts.indexOf(x);k>=0?S.acts.splice(k,1):S.acts.push(x);save()}),
+ h("h2",null,"A few words (optional, but they help a lot)"),
+ f("hours","Something you spent hours on that nobody asked you to.","Sesuatu yang kamu kerjakan berjam-jam tanpa disuruh."),
+ f("made","Things you've made or won (videos, code, art, projects, competitions).","Karya atau prestasi (video, kode, karya, proyek, lomba)."),
+ f("others","What do people usually come to you for?","Biasanya orang datang ke kamu untuk apa?"))}
+
+/* ---------- daily log ---------- */
+let logDate=today();
+const MOODS=["Bad","Meh","OK","Good","Great"];
+function logView(){const t=today(),y=addDays(t,-1),canY=S.logStart&&y>=S.logStart&&!S.log[y];
+ if(logDate!==t&&logDate!==y)logDate=t;
+ const e=S.log[logDate]||{},d={free:[...(e.free||[])],lost:e.lost||"",mood:e.mood||0,note:e.note||e.q1||""};
+ const lostBox=h("div",{class:"pills"});
+ const drawLost=()=>{lostBox.innerHTML="";["Nothing today",...d.free].forEach(x=>lostBox.append(h("button",{"aria-pressed":d.lost===x,onclick:ev=>{d.lost=x;[...lostBox.children].forEach(b=>b.setAttribute("aria-pressed","false"));ev.currentTarget.setAttribute("aria-pressed","true")}},x)))};
+ drawLost();
+ const moods=h("div",{class:"choice"});MOODS.forEach((m,k)=>moods.append(h("button",{"aria-pressed":d.mood===k+1,onclick:ev=>{d.mood=k+1;[...moods.children].forEach(b=>b.setAttribute("aria-pressed","false"));ev.currentTarget.setAttribute("aria-pressed","true")}},m)));
+ return h("div",null,back(),h("h1",null,"30-second check-in"),
+  h("div",{class:"choice"},h("button",{"aria-pressed":logDate===t,onclick:()=>{logDate=t;render()}},"Today"),canY||logDate===y?h("button",{"aria-pressed":logDate===y,onclick:()=>{logDate=y;render()}},"Yesterday (forgot)"):null),
+  h("p",{class:"muted small"},dayLabel(logDate)),
+  h("h2",null,"What did you do in your free time?"),h("p",{class:"muted small"},"Tap all that apply. / Apa yang kamu lakukan di waktu luang?"),
+  chips(FREE,x=>d.free.includes(x),x=>{const k=d.free.indexOf(x);k>=0?d.free.splice(k,1):d.free.push(x);if(!d.free.includes(d.lost))d.lost="";drawLost()}),
+  h("h2",null,"Did any of it make you lose track of time?"),h("p",{class:"muted small"},"Ada yang membuatmu lupa waktu?"),lostBox,
+  h("h2",null,"How was today?"),moods,
+  h("label",null,h("span",null,"Anything specific? (optional)",h("span",{class:"id"},"Misalnya: video apa, game apa, belajar apa.")),h("input",{type:"text",value:d.note,oninput:ev=>d.note=ev.target.value})),
+  h("div",{class:"nav"},h("span"),h("button",{class:"btn primary",onclick:()=>{if(!d.free.length)return toast("Tap at least one activity");
+   if(!S.logStart||logDate<S.logStart)S.logStart=logDate;
+   S.log[logDate]={free:d.free,lost:d.lost,mood:d.mood,note:d.note.trim(),ts:Date.now(),late:logDate!==today()};go("hub");toast("Saved")}},"Save")))}
+
+/* ---------- others ---------- */
+function others(){let txt="";
+ return h("div",null,back(),h("h1",null,"How others see you"),
+  h("p",null,`Your parent sends a link to at least ${MIN_RATERS} people who see you often. Their answers go to your parent, not to you. When enough are in, your parent gives you one code. Paste it here.`),
+  h("p",{class:"muted small"},"Orang tuamu mengirim link ke minimal 5 orang. Jawaban dikirim ke orang tuamu. Setelah cukup, kamu dapat satu kode untuk ditempel di sini."),
+  h("div",{class:"panel"},h("h3",{style:"margin-top:0"},"Paste the code from your parent"),h("p",{class:"muted small"},"It starts with PATHB1."),
+   h("textarea",{id:"codes",placeholder:"PATHB1.…",oninput:e=>txt=e.target.value}),
+   h("div",{class:"row",style:"margin-top:8px"},h("button",{class:"btn primary",onclick:()=>{const o=decB(txt);if(!o)return toast("That isn't a valid code");
+     if(S.revealed&&o.n<=S.nRaters)return toast("You already have this one");
+     S.pools=o.pools;S.rels=o.rels||{};S.nRaters=o.n;S.revealed=true;save();toast("Unlocked");render()}},S.revealed?"Update":"Unlock"))),
+  S.revealed?h("div",{class:"panel"},h("h3",{style:"margin-top:0"},`What ${S.nRaters} people said`),
+   h("p",{class:"muted small"},"Mixed up on purpose: answers are shuffled within each question and not linked to each other. "+relLine()),
+   RATER_Q.map((q,i)=>h("div",{class:"item"},h("div",{class:"q"},h("strong",null,q)),S.pools[i].length?h("ul",null,S.pools[i].map(a=>h("li",null,a))):h("p",{class:"muted small"},"No answers.")))):null)}
+/* ---------- results ---------- */
+function scenarioTally(){const t={};SCENARIOS.forEach(q=>{const k=S.a[q.id];if(k!=null){const th=q.opts[k][2];t[th]=(t[th]||0)+1}});return Object.entries(t).sort((a,b)=>b[1]-a[1])}
+function logTally(){const f={},l={},ds=Object.keys(S.log);ds.forEach(d=>{const e=S.log[d];(e.free||[]).forEach(x=>f[x]=(f[x]||0)+1);if(e.lost&&e.lost!=="Nothing today")l[e.lost]=(l[e.lost]||0)+1});
+ const fmt=o=>Object.entries(o).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k} ${v}`).join(", ")||"none";return{free:fmt(f),lost:fmt(l)}}
+function prompt(){const ri=riasec(),b=big5(),tp=topics(),st=logStats(),lt=logTally(),n=S.name;
+ const L=[`You are helping ${n}, a grade 10 student in Indonesia, understand his strengths and explore career directions, following the PATH principles in this project.`,
+ "",`RULES`,
+ `- Hypotheses, not verdicts. Never say "you should be X".`,
+ `- Every claim cites evidence codes: S interests, T topics, P personality, X scenarios, V values, K school, A activities, L his own words, D daily log, R others.`,
+ `- Rate each theme Strong / Emerging / Not yet seen. Never rank themes 1–N. Strong needs at least 2 different source types; "Not yet seen" is not a weakness.`,
+ `- No clinical or diagnostic language. Earnings are not a filter. Careers are global; flag portability (portable / partly / license-bound).`,
+ `- Others' answers (R) are anonymous and shuffled: never guess who wrote what.`,
+ `- Separate "likes the subject" from "likes the real work". If biology shows up, use the "Biology + X" note in this project.`,
+ `- Write to ${n} in plain, warm English. Short paragraphs and tables. No jargon.`,
+ "",`OUTPUT, in this order`,
+ `1. Your map in 3 sentences.`,
+ `2. Strengths table: theme · what it means · rating · evidence codes with the specific data. 8–12 themes.`,
+ `3. How you see yourself vs how others see you: 2–4 matches and gaps, framed with curiosity.`,
+ `4. Subject pulls (backed by 2+ sources) vs leads (one source only).`,
+ `5. 3–5 career families. For each: why it fits (cite themes), 4–6 example roles worldwide, what the work is like day to day, portability.`,
+ `6. 3 small experiments (≤ 4 weeks, cheap) to test the top families. For each: what to do, what result would confirm or weaken the fit, and what it adds to a future university application.`,
+ `7. Curriculum direction (Kurikulum Merdeka / IB / Cambridge), direction-level only.`,
+ `8. What's missing or uncertain, and what would make the map sharper.`,
+ `9. Six short statements about ${n}. Ask him to rate each 1–5 for "this is me" and reply. When he replies, revise any theme he rates 2 or lower, or explain why the evidence still points there.`,
+ `10. For his parents: max 150 words in formal Bahasa Indonesia (Bapak/Ibu). No new claims beyond the above.`,
+ `Before answering, check your draft against the rules and remove anything without evidence.`,
+ "","DATA",
+ `S interests (1–5): `+Object.entries(ri.o).map(([k,v])=>`${k} ${v==null?"-":v.toFixed(2)}`).join(", ")+` · code ${ri.code}`,
+ `S item answers: `+INTERESTS.map(i=>`${i.en}=${S.a[i.id]??"-"}`).join("; "),
+ `T topics rated 4–5: `+(tp.filter(x=>x.s>=4).map(x=>`${x.t} (${x.s})`).join(", ")||"none")+` · forced pick: ${S.forced||"-"}`,
+ `P personality, Mini-IPIP 20 items (1–5): `+Object.entries(b).map(([k,v])=>`${DOMAINS[k]} ${v==null?"-":v.toFixed(2)}`).join(", "),
+ `X scenario choices (theme tally): `+(scenarioTally().map(([k,v])=>`${k} ${v}`).join(", ")||"-"),
+ ...SCENARIOS.filter(q=>S.a[q.id]!=null).map(q=>`  - ${q.en} → ${q.opts[S.a[q.id]][0]}`),
+ `V top 5 values: `+S.values.map(v=>v+(S.why[v]?` ("${S.why[v]}")`:"")).join("; "),
+ `K school (self-rated): `+LEVELS.slice(0,3).map(([k,l])=>`${l}: ${SUBJECTS.filter(x=>S.subj[x]===k).join(", ")||"-"}`).join(" · ")+` · enjoys most: ${S.subjFav||"-"}`+(S.life.subjects?` · notes: ${S.life.subjects}`:""),
+ `A regular activities: ${S.acts.join(", ")||"-"}`+(S.life.activities?` · notes: ${S.life.activities}`:""),
+ `L his own words:`,...Object.entries({hours:"Spent hours on, unasked",made:"Made or won",others:"People come to him for (his view)"}).map(([k,l])=>`- ${l}: ${(S.life[k]||"-").trim()}`),
+ `D daily log: ${st.done} of 14 days (${st.missed} missed, ${st.late} filled a day late). Free time, days per activity: ${lt.free}. Lost track of time: ${lt.lost}.`,
+ ...Object.keys(S.log).sort().map(d=>{const e=S.log[d];return e.free?`- ${d}: ${e.free.join(", ")}`+(e.lost?` | lost track: ${e.lost}`:"")+(e.mood?` | day: ${MOODS[e.mood-1]}`:"")+(e.note?` | "${e.note}"`:""):`- ${d}: ${e.q1||"-"} | lost track: ${e.q2||"-"}`})];
+ if(S.revealed){L.push(`R others: ${S.nRaters} people, anonymous, answers shuffled per question. ${relLine()}`);RATER_Q.forEach((q,i)=>{L.push(`- ${q}:`);S.pools[i].forEach(a=>L.push(`  • ${a}`))})}
+ else L.push(`R others: not in yet. Say which themes need others' input to become Strong.`);
+ return L.join("\n")}
+function results(){const ri=riasec(),b=big5(),tp=topics(),p=prompt();
+ const row=(l,v)=>h("tr",null,h("td",null,l),h("td",{class:"n"},v==null?"—":v.toFixed(1)));
+ return h("div",null,back(),h("h1",null,`Your results, ${S.name}`),
+ h("p",null,"These are raw scores, not your map yet. The map comes when the summary below is turned into words, with evidence for each point."),
+ h("h2",null,"Activities you'd enjoy (1–5)"),h("table",null,Object.entries(ri.o).map(([k,v])=>row({R:"Hands-on",I:"Investigating",A:"Creating",S:"Helping",E:"Persuading",C:"Organising"}[k],v))),
+ h("h2",null,"Topics that pull you"),h("p",null,tp.filter(x=>x.s>=4).map(x=>x.t).join(", ")||"None rated 4–5."),h("p",null,"Your one pick: ",h("strong",null,S.forced)),
+ h("h2",null,"How you usually are (1–5)"),h("table",null,Object.entries(b).map(([k,v])=>row(DOMAINS[k],v))),
+ h("h2",null,"What you'd do"),h("p",null,scenarioTally().map(([k,v])=>`${k} ×${v}`).join(" · ")||"—"),
+ h("h2",null,"What matters to you"),h("p",null,S.values.join(" · ")),
+ h("h2",null,"School"),h("p",null,"Strong: "+(SUBJECTS.filter(x=>S.subj[x]==="strong").join(", ")||"—")+" · Enjoy most: "+(S.subjFav||"—")),
+ h("div",{class:"panel"},h("h2",{style:"margin-top:0"},"Next: turn this into your map"),
+  h("p",null,"Copy the summary and paste it into a Claude chat inside the “Path.Gressus” project."),
+  h("p",{class:"muted small"},"Salin ringkasan ini, lalu tempel di chat Claude di dalam project Path.Gressus."),
+  h("button",{class:"btn primary",onclick:()=>copy(p)},"Copy summary for Claude"),h("pre",{style:"margin-top:12px"},p)),
+ h("div",{class:"nav"},h("button",{class:"btn",onclick:()=>{const a=h("a",{href:URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:"application/json"})),download:`map-${S.name||"me"}.json`});document.body.append(a);a.click();a.remove()}},"Download a backup"),
+  h("button",{class:"btn quiet",onclick:e=>{const b=e.currentTarget;if(b.dataset.armed){localStorage.removeItem(KEY);location.reload()}else{b.dataset.armed=1;b.textContent="Tap again to erase everything"}}},"Start over")))}
+render();
+</script>
+</body>
+</html>

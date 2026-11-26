@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<title>Cerita Penilai</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one calm column, five story prompts, then a code to copy back. */
+:root{--paper:#FBFAF7;--surface:#FFFFFF;--ink:#1D2433;--muted:#5B6372;--rule:#DEDBD3;--sea:#1F6F78;--sea-ink:#FFFFFF;--sand:#F1E7D3;--amber:#9A5A00;--amber-bg:#FBEFD9;
+ --font:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15181F;--surface:#1C2029;--ink:#E8E6E1;--muted:#A3A9B5;--rule:#2F3540;--sea:#55B4BD;--sea-ink:#0F1A1C;--sand:#24363A;--amber:#E3A64B;--amber-bg:#3A2C14;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15181F;--surface:#1C2029;--ink:#E8E6E1;--muted:#A3A9B5;--rule:#2F3540;--sea:#55B4BD;--sea-ink:#0F1A1C;--sand:#24363A;--amber:#E3A64B;--amber-bg:#3A2C14;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font:17px/1.55 var(--font);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:640px;margin:0 auto;padding-block:28px 64px;display:flex;flex-direction:column;gap:14px}
+h1{font-size:1.65rem;line-height:1.2;margin:0;text-wrap:balance}
+h2{font-size:1.1rem;margin:12px 0 0}
+p{margin:0}
+.muted{color:var(--muted)}
+.note{background:var(--amber-bg);color:var(--amber);border-radius:8px;padding:10px 12px;font-size:.92rem}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{border:1px solid var(--rule);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 14px;font:inherit;font-size:.95rem;cursor:pointer}
+.chips button[aria-pressed="true"]{background:var(--sand);border-color:var(--sea);font-weight:600}
+label{display:flex;flex-direction:column;gap:6px}
+textarea{width:100%;min-height:90px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);border-radius:8px;padding:10px;font:inherit;resize:vertical}
+.btn{align-self:flex-start;border:1px solid var(--sea);background:var(--sea);color:var(--sea-ink);border-radius:999px;padding:10px 20px;font:inherit;font-weight:600;cursor:pointer}
+.btn.ghost{background:var(--surface);color:var(--sea)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
+#code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem;min-height:120px;word-break:break-all}
+:focus-visible{outline:3px solid var(--sea);outline-offset:2px}
+.steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+.tips{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px;font-size:.95rem}
+.q{display:flex;flex-direction:column;gap:8px;padding-bottom:16px;border-bottom:1px solid var(--rule)}
+.q:last-of-type{border-bottom:0}
+.qt{font-weight:600;font-size:1.02rem}
+.qd{color:var(--muted);font-size:.93rem}
+details{font-size:.92rem;background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:8px 12px}
+summary{cursor:pointer;color:var(--sea);font-weight:600}
+.ex{display:grid;gap:6px;margin-top:8px}
+.ex div{padding-left:10px;border-left:3px solid var(--rule)}
+.ex .good{border-left-color:var(--sea)}
+.lbl{font-size:.8rem;color:var(--muted);display:block}
+</style>
+
+<div class="wrap">
+  <h1 id="title">Cerita tentang anak yang mengirim link ini</h1>
+  <p>Seorang remaja sedang mengenali kekuatan dirinya untuk memilih arah studi dan karier. Ia butuh cerita dari orang yang melihatnya sehari-hari. Cerita Anda membantunya melihat hal yang sering tidak ia sadari sendiri.</p>
+
+  <div class="panel">
+    <h2 style="margin:0">Cara mengisi (sekitar 10 menit)</h2>
+    <ol class="steps">
+      <li>Pilih bagaimana Anda mengenal <span class="nm">dia</span>.</li>
+      <li>Jawab 5 pertanyaan cerita. Minimal 3 harus diisi; kosongkan yang Anda tidak tahu.</li>
+      <li>Tekan <strong>Buat kode jawaban</strong>, salin kodenya, lalu kirim lewat WhatsApp ke nomor di pesan undangan.</li>
+    </ol>
+  </div>
+
+  <div class="panel">
+    <h2 style="margin:0">Supaya jawaban Anda paling berguna</h2>
+    <ul class="tips">
+      <li><strong>Ceritakan kejadian nyata</strong>, bukan sifat umum. "Waktu… dia…" jauh lebih membantu daripada "dia anak baik".</li>
+      <li><strong>Tulis yang Anda lihat sendiri</strong>, bukan yang Anda dengar dari orang lain.</li>
+      <li><strong>Jujur, termasuk kekurangannya.</strong> Tidak ada jawaban benar atau salah, dan ini bukan penilaian sekolah.</li>
+      <li><strong>Singkat tidak apa-apa.</strong> Dua sampai empat kalimat per pertanyaan sudah cukup. Bahasa sehari-hari juga tidak apa-apa.</li>
+      <li>Setiap pertanyaan ada contohnya. Tekan <strong>Lihat contoh</strong> kalau ragu.</li>
+    </ul>
+  </div>
+
+  <p class="note">Kode dikumpulkan oleh orang tuanya. Anak baru bisa membaca setelah minimal 5 orang mengisi, dan semua jawaban diacak, jadi ia tidak tahu siapa menulis apa. Supaya tetap anonim, <strong>jangan tulis nama Anda atau hubungan Anda dengannya</strong> di dalam jawaban (misalnya "sebagai gurunya…").</p>
+  <p class="muted" style="font-size:.9rem">Tidak ada yang tersimpan di internet. Jawaban hanya menjadi kode yang Anda kirim sendiri. Ketikan Anda tersimpan sementara di perangkat ini, jadi aman kalau halaman tertutup.</p>
+
+  <h2>Anda mengenal <span class="nm">dia</span> sebagai</h2>
+  <p class="muted" style="font-size:.9rem">Hanya dihitung secara total (misalnya "2 keluarga, 1 guru"), tidak ditempelkan ke jawaban Anda.</p>
+  <div class="chips" id="rel"></div>
+
+  <form id="form" class="panel">
+    <div class="q"><label for="a0"><span class="qt">1. Ceritakan satu kejadian saat <span class='nm'>dia</span> membuat Anda terkejut.</span></label>
+      <p class="qd">Saat dia melakukan sesuatu lebih baik dari dugaan Anda, atau dengan cara yang tidak Anda sangka. Bisa di sekolah, di rumah, saat bermain, atau saat ada masalah. Ceritakan apa yang terjadi dan apa yang dia lakukan.</p>
+      <details><summary>Lihat contoh</summary><div class="ex"><div><span class="lbl">Kurang membantu</span>Dia pintar dan kreatif.</div><div class="good"><span class="lbl">Lebih membantu</span>Waktu proyek kelompok hampir gagal karena satu anggota sakit, dia diam-diam mengerjakan bagian itu semalaman dan malah menambah video penjelasan. Gurunya sampai memakai videonya untuk kelas lain.</div></div></details>
+      <textarea id="a0" placeholder="Tulis ceritanya di sini…"></textarea></div>
+    <div class="q"><label for="a1"><span class="qt">2. Biasanya orang datang kepada <span class='nm'>dia</span> untuk apa?</span></label>
+      <p class="qd">Hal apa yang sering diminta orang lain darinya: teman, adik, saudara, atau teman sekelas. Misalnya minta dijelaskan pelajaran, minta dibuatkan sesuatu, minta pendapat, minta ditemani, atau minta dibetulkan barangnya.</p>
+      <details><summary>Lihat contoh</summary><div class="ex"><div><span class="lbl">Kurang membantu</span>Minta tolong.</div><div class="good"><span class="lbl">Lebih membantu</span>Teman-temannya sering minta dia menjelaskan ulang pelajaran yang tidak mereka pahami, dan selalu minta dia yang membuat slide presentasi kelompok.</div></div></details>
+      <textarea id="a1" placeholder="Tulis ceritanya di sini…"></textarea></div>
+    <div class="q"><label for="a2"><span class="qt">3. Kapan Anda melihat <span class='nm'>dia</span> benar-benar asyik dengan sesuatu sampai lupa waktu?</span></label>
+      <p class="qd">Kegiatan yang membuatnya tenggelam: lupa makan, tidak dengar dipanggil, atau mengerjakannya berjam-jam tanpa disuruh. Sebutkan kegiatannya sespesifik mungkin, dan kalau bisa, apa yang dia kerjakan di dalamnya.</p>
+      <details><summary>Lihat contoh</summary><div class="ex"><div><span class="lbl">Kurang membantu</span>Main HP.</div><div class="good"><span class="lbl">Lebih membantu</span>Dia bisa tiga jam menonton video tentang hiu lalu mencatat fakta-faktanya, kemudian menjelaskannya ke sepupunya saat makan malam.</div></div></details>
+      <textarea id="a2" placeholder="Tulis ceritanya di sini…"></textarea></div>
+    <div class="q"><label for="a3"><span class="qt">4. Hal apa yang terasa lebih sulit bagi <span class='nm'>dia</span> dibanding anak lain seusianya?</span></label>
+      <p class="qd">Bukan untuk mencari kesalahan. Ini membantu dia memilih arah yang cocok dan tahu apa yang perlu dilatih. Bisa soal pelajaran, kebiasaan, atau situasi tertentu. Tulis dengan jujur dan baik hati.</p>
+      <details><summary>Lihat contoh</summary><div class="ex"><div><span class="lbl">Kurang membantu</span>Malas.</div><div class="good"><span class="lbl">Lebih membantu</span>Tugas yang tidak dia pilih sendiri sering dikerjakan mepet tenggat. Tapi kalau dia tertarik, dia bisa sangat tekun.</div></div></details>
+      <textarea id="a3" placeholder="Tulis ceritanya di sini…"></textarea></div>
+    <div class="q"><label for="a4"><span class="qt">5. Satu kata untuk menggambarkan <span class='nm'>dia</span>, dan cerita di baliknya.</span></label>
+      <p class="qd">Pilih satu kata yang paling pas menurut Anda, lalu ceritakan satu kejadian yang membuat Anda memilih kata itu.</p>
+      <details><summary>Lihat contoh</summary><div class="ex"><div><span class="lbl">Kurang membantu</span>Baik.</div><div class="good"><span class="lbl">Lebih membantu</span>"Penasaran." Dia tidak pernah puas dengan jawaban pertama. Waktu kecil dia membongkar remote TV hanya untuk melihat isinya.</div></div></details>
+      <textarea id="a4" placeholder="Tulis ceritanya di sini…"></textarea></div>
+    <button class="btn" id="make" type="submit" disabled>Buat kode jawaban</button>
+    <p class="muted" id="hint" style="font-size:.9rem">Pilih hubungan dan isi minimal 3 pertanyaan.</p>
+  </form>
+
+  <div class="panel" id="out" hidden>
+    <h2 style="margin:0">Terakhir: kirim kode ini</h2>
+    <p>Salin kode di bawah, lalu kirim lewat WhatsApp ke <strong>nomor yang tertulis di pesan undangan</strong> (orang tuanya), bukan kepada anaknya. Kode ini tidak bisa dibaca sebagai teks biasa.</p>
+    <textarea id="code" readonly></textarea>
+    <button class="btn" id="copy" type="button">Salin kode</button>
+    <p class="muted" id="copied" style="font-size:.9rem"></p>
+    <button class="btn ghost" id="edit" type="button">Ubah jawaban</button>
+  </div>
+</div>
+
+<script>
+const RELS=["Orang tua","Kakak / adik","Saudara","Guru","Teman","Lainnya"];
+const KEYSTR="path-lite-raters-v1";
+function encode(obj){const b=new TextEncoder().encode(JSON.stringify(obj)),k=new TextEncoder().encode(KEYSTR);
+ let sum=0;const x=b.map((v,i)=>{sum=(sum+v)%65521;return v^k[i%k.length]});
+ let s="";x.forEach(v=>s+=String.fromCharCode(v));return "PATH1."+btoa(s)+"."+sum.toString(36)}
+const hm=(location.hash||"").slice(1).match(/^([A-Za-z]{1,12})-([A-Z0-9]{4})$/);
+const child=hm?hm[0]:null;
+if(hm){document.getElementById("title").textContent="Cerita tentang "+hm[1];document.querySelectorAll(".nm").forEach(e=>e.textContent=hm[1]);}
+const DK="rater-draft-"+(child||"x");
+let rel="";
+const relBox=document.getElementById("rel");
+RELS.forEach(r=>{const b=document.createElement("button");b.type="button";b.textContent=r;b.setAttribute("aria-pressed","false");
+ b.onclick=()=>{rel=r;[...relBox.children].forEach(c=>c.setAttribute("aria-pressed",c===b));check()};relBox.append(b)});
+const ta=[0,1,2,3,4].map(i=>document.getElementById("a"+i));
+const make=document.getElementById("make"),hint=document.getElementById("hint");
+function check(){const n=ta.filter(t=>t.value.trim().length>2).length,ok=rel&&n>=3;make.disabled=!ok;hint.textContent=ok?"":"Pilih hubungan dan isi minimal 3 pertanyaan."}
+try{const d=JSON.parse(localStorage.getItem(DK)||"null");if(d){ta.forEach((t,i)=>t.value=d.a[i]||"");if(d.rel){const b=[...relBox.children].find(c=>c.textContent===d.rel);if(b)b.click()}}}catch(e){}
+function saveDraft(){try{localStorage.setItem(DK,JSON.stringify({rel,a:ta.map(t=>t.value)}))}catch(e){}}
+ta.forEach(t=>t.addEventListener("input",()=>{check();saveDraft()}));relBox.addEventListener("click",saveDraft);check();
+document.getElementById("form").addEventListener("submit",e=>{e.preventDefault();if(make.disabled)return;
+ const id=Array.from(crypto.getRandomValues(new Uint8Array(8)),v=>v.toString(16).padStart(2,"0")).join("");
+ const code=encode({v:1,id,child,rel,ans:ta.map(t=>t.value.trim())});
+ document.getElementById("code").value=code;document.getElementById("form").hidden=true;document.getElementById("out").hidden=false;window.scrollTo(0,0)});
+document.getElementById("copy").addEventListener("click",()=>{const c=document.getElementById("code"),msg=document.getElementById("copied");
+ navigator.clipboard.writeText(c.value).then(()=>msg.textContent="Tersalin. Tempel di WhatsApp lalu kirim.").catch(()=>{c.select();msg.textContent="Kode sudah dipilih. Tekan Salin di ponsel Anda."})});
+document.getElementById("edit").addEventListener("click",()=>{document.getElementById("out").hidden=true;document.getElementById("form").hidden=false});
+</script>
+
+</body>
+</html>
